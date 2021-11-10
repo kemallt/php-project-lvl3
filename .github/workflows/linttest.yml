@@ -17,4 +17,4 @@ jobs:
       - name: run-linter
         run: make lint
       - name: run-tests
-        uses: make test
+        run: make test
