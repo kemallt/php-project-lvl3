@@ -8,7 +8,6 @@ setup:
 	touch database/database.sqlite
 	php artisan migrate
 	php artisan db:seed
-	npm install
 
 watch:
 	npm run watch
@@ -29,7 +28,7 @@ deploy:
 	git push heroku
 
 lint:
-	composer phpcs
+	composer exec --verbose phpcs -- --standard=PSR12 app
 
 lint-fix:
 	composer phpcbf
