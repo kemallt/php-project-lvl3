@@ -1,4 +1,6 @@
 @extends('layout')
 @section('content')
-    Hello World from show!
+    @php
+        var_dump($url)
+    @endphp
 @endsection

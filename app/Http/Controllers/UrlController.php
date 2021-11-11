@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,7 +16,7 @@ class UrlController extends Controller
     public function index()
     {
         $urls = DB::table('urls')->get();
-        return view('index', compact($urls));
+        return view('index', ['urls' => $urls]);
     }
 
     /**
@@ -37,17 +38,19 @@ class UrlController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|max:255'
+            'url.name' => 'required|max:255'
         ]);
-        $foundedUrl = DB::table('urls')->where('name', '=', $request->input('name'))->get();
-        if ($foundedUrl) {
+        $foundedUrl = DB::table('urls')->where('name', '=', $validatedData['url']['name'])->get();
+        if ($foundedUrl->count() !== 0) {
             return redirect()
-                ->route('urls.show', ['id' => $foundedUrl->id])
-                ->with('status', 'Page already exists');
+                ->route('urls.show', ['url' => $foundedUrl->first()->id])
+                ->withStatus('Страница уже существует');
         }
         try {
-            DB::table('urls')->insert($validatedData);
-            return redirect()->route('urls.index')->with('status', 'Site saved successfully');
+            $url = $validatedData['url'];
+            $url['created_at'] = Carbon::now();
+            $id = DB::table('urls')->insertGetId($url);
+            return redirect()->route('urls.show', ['url' => $id])->withSuccess('Сайт успешно добавлен');
         } catch (\Exception $exception) {
             return redirect()
                 ->route('urls.create')
@@ -65,7 +68,7 @@ class UrlController extends Controller
     public function show($id)
     {
         $url = DB::table('urls')->find($id);
-        return view('show', compact($url));
+        return view('show', ['url' => $url]);
     }
 
     /**
@@ -77,7 +80,7 @@ class UrlController extends Controller
     public function edit($id)
     {
         $url = DB::table('urls')->find($id);
-        return view('edit', compact($url));
+        return view('edit', ['url' => $url]);
     }
 
 //    /**

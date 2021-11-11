@@ -33,6 +33,21 @@
         </nav>
     </header>
     <main class="flex-grow-1">
+        @if(session('success'))
+            <div class="alert alert-info" role="alert">
+                {{session('success')}}
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-info" role="alert">
+                {{session('message')}}
+            </div>
+        @endif
+        @if(session('status'))
+            <div class="alert alert-info" role="alert">
+                {{session('status')}}
+            </div>
+        @endif
         @yield('content')
     </main>
 <script src="/js/app.js"></script>

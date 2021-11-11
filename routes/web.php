@@ -16,5 +16,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', 'App\Http\Controllers\UrlController@create')->name('urls.create');
 Route::get('/urls', 'App\Http\Controllers\UrlController@index')->name('urls.index');
 Route::get('/urls/{url}', 'App\Http\Controllers\UrlController@show')->name('urls.show');
-Route::post('urls', 'App\Http\Controllers\UrlController@store')->name('urls.store');
+Route::post('/urls', 'App\Http\Controllers\UrlController@store')->name('urls.store');
 
