@@ -39,17 +39,21 @@ class UrlController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|max:255'
         ]);
+        $foundedUrl = DB::table('urls')->where('name', '=', $request->input('name'))->get();
+        if ($foundedUrl) {
+            return redirect()
+                ->route('urls.show', ['id' => $foundedUrl->id])
+                ->with('status', 'Page already exists');
+        }
         try {
             DB::table('urls')->insert($validatedData);
-            return redirect()->route('urls.index')->with('success', 'Site saved successfully');
+            return redirect()->route('urls.index')->with('status', 'Site saved successfully');
         } catch (\Exception $exception) {
             return redirect()
                 ->route('urls.create')
                 ->withInput()
                 ->with(['error' => true, 'message' => $exception->getMessage()]);
         }
-
-
     }
 
     /**
