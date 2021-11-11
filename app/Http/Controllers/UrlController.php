@@ -38,7 +38,7 @@ class UrlController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'url.name' => 'required|max:255'
+            'url.name' => 'required|max:255|url'
         ]);
         $foundedUrl = DB::table('urls')->where('name', '=', $validatedData['url']['name'])->get();
         if ($foundedUrl->count() !== 0) {
