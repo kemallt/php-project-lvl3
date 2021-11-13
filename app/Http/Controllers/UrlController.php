@@ -92,19 +92,24 @@ class UrlController extends Controller
     public function check($id)
     {
         $url = DB::table('urls')->find($id);
-        $check = $this->performCheck($url);
         try {
-            DB::table('url_checks')->insert($check);
+            $checkResult = $this->performCheck($url);
         } catch (\Exception $exception) {
             return redirect()
-                ->route('urls.create')
-                ->withInput()
-                ->with(['error' => true, 'message' => $exception->getMessage()]);
+                ->back()
+                ->withErrors(['resourceCheck' => $exception->getMessage()]);
+        }
+        try {
+            DB::table('url_checks')->insert($checkResult);
+        } catch (\Exception $exception) {
+            return redirect()
+                ->back()
+                ->withErrors(['message' => $exception->getMessage()]);
         }
         return redirect()->route('urls.show', ['url' => $id])->withSuccess('Страница успешно проверена');
     }
 
-    public function performCheck($url)
+    public function performCheck(object $url): array
     {
         $response = Http::get($url->name);
         $check = [
@@ -118,7 +123,7 @@ class UrlController extends Controller
         return $check;
     }
 
-    public function prepareUrl($url)
+    public function prepareUrl(array $url): array
     {
         $url['created_at'] = Carbon::now();
         $urlScheme = parse_url($url['name'], PHP_URL_SCHEME);
