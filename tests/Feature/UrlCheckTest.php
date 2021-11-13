@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Mockery;
 use Tests\TestCase;
 
 class UrlCheckTest extends TestCase
@@ -28,97 +27,28 @@ class UrlCheckTest extends TestCase
         DB::table('urls')->insert($this->urls);
     }
 
-    public function testCheck(): void
+    /**
+     * @dataProvider dataProvider
+     */
+    public function testCheck($html, $seeText): void
     {
         Http::fake([
-            $this->url['name'] => Http::response('html body', $this->statusCode)
+            $this->url['name'] => Http::response($html, $this->statusCode)
         ]);
-        $mockHtmlReturn = $this->getMockHtmlReturn();
-        $this->getDocumentMock($mockHtmlReturn);
         $response = $this->post(route('urls.checks', ['url' => $this->url['id']]));
         $this->assertDatabaseHas('url_checks', [
             'url_id' => $this->url['id'],
             'status_code' => $this->statusCode
         ]);
         $response->assertRedirect(route('urls.show', ['url' => $this->url['id']]));
-        $this->followRedirects($response)->assertStatus($this->statusCode)->assertSee($this->statusCode)->assertSee('h1 mock text');
+        $this->followRedirects($response)->assertStatus($this->statusCode)->assertSee($this->statusCode)->assertSee($seeText);
     }
 
-    public function testCheckWithoutH1(): void
+    public function dataProvider()
     {
-        Http::fake([
-            $this->url['name'] => Http::response('html body', $this->statusCode)
-        ]);
-        $this->getDocumentMockWithNulls();
-        $response = $this->post(route('urls.checks', ['url' => $this->url['id']]));
-        $this->assertDatabaseHas('url_checks', [
-            'url_id' => $this->url['id'],
-            'status_code' => $this->statusCode,
-            'h1' => null,
-            'title' => null,
-            'description' => null
-        ]);
-        $this->followRedirects($response)->assertStatus($this->statusCode)->assertSee($this->statusCode);
-    }
-
-    private function getDocumentMockWithNulls(): void
-    {
-        $documentMock = Mockery::mock('overload:\DiDom\Document');
-        $documentMock
-            ->shouldReceive('first')
-            ->with('h1')
-            ->once()
-            ->andReturn(null);
-        $documentMock
-            ->shouldReceive('first')
-            ->with('title')
-            ->once()
-            ->andReturn(null);
-        $documentMock
-            ->shouldReceive('first')
-            ->with('meta[name=description]')
-            ->once()
-            ->andReturn(null);
-    }
-
-    private function getDocumentMock($mockHtmlReturn): void
-    {
-        $documentMock = Mockery::mock('overload:\DiDom\Document');
-        $documentMock
-            ->shouldReceive('first')
-            ->with('h1')
-            ->once()
-            ->andReturnUsing(fn () => $mockHtmlReturn('h1 mock text'));
-        $documentMock
-            ->shouldReceive('first')
-            ->with('title')
-            ->once()
-            ->andReturnUsing(fn () => $mockHtmlReturn('title mock text'));
-        $documentMock
-            ->shouldReceive('first')
-            ->with('meta[name=description]')
-            ->once()
-            ->andReturnUsing(fn () => $mockHtmlReturn('description mock text'));
-    }
-
-    private function getMockHtmlReturn(): callable
-    {
-        return function ($retText) {
-            return new class ($retText) {
-                private $retText;
-                public function __construct($retText)
-                {
-                    $this->retText = $retText;
-                }
-                public function attr()
-                {
-                    return $this->retText;
-                }
-                public function text()
-                {
-                    return $this->retText;
-                }
-            };
-        };
+        return [
+            'testFilled' => [file_get_contents(__DIR__ . '/../fixtures/test.html'), 'h1 mock text'],
+            'testNulls' => [file_get_contents(__DIR__ . '/../fixtures/testnull.html'), 'body']
+        ];
     }
 }
