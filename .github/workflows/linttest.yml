@@ -19,7 +19,7 @@ jobs:
       - name: run-tests
         run: make test
       - name: run-tests
-        uses: paambati/codeclimate-action@v2.6.0
+        uses: paambaati/codeclimate-action@v2.6.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
