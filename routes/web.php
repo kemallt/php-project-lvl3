@@ -18,4 +18,4 @@ Route::get('/urls', 'App\Http\Controllers\UrlController@index')->name('urls.inde
 Route::get('/urls/{url}', 'App\Http\Controllers\UrlController@show')->name('urls.show');
 Route::post('/urls', 'App\Http\Controllers\UrlController@store')->name('urls.store');
 
-Route::post('/urls/{url}/checks', 'App\Http\Controllers\UrlController@check')->name('urls.checks');
+Route::post('/urls/{url}/checks', 'App\Http\Controllers\UrlCheckController@check')->name('urls.checks');
