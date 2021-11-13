@@ -86,8 +86,8 @@ class UrlController extends Controller
     public function prepareUrl(array $url): array
     {
         $url['created_at'] = Carbon::now();
-        $urlScheme = parse_url($url['name'], PHP_URL_SCHEME) ?? '';
-        $urlName = parse_url($url['name'], PHP_URL_HOST) ?? '';
+        $urlScheme = (string)parse_url($url['name'], PHP_URL_SCHEME);
+        $urlName = (string)parse_url($url['name'], PHP_URL_HOST);
         $url['name'] = mb_strtolower($urlScheme) . "://" . mb_strtolower($urlName);
         return $url;
     }

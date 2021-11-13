@@ -36,19 +36,13 @@ class UrlCheckController extends Controller
         return redirect()->route('urls.show', ['url' => $id])->withSuccess('Страница успешно проверена');
     }
 
-    public function checkStatus(string $url): int
-    {
-        $response = Http::get($url);
-        return $response->status();
-    }
-
     public function performCheck(object $url): array
     {
         $response = Http::get($url->name);
         $document = new Document($response->body());
         return [
             'url_id' => $url->id,
-            'status_code' => $this->checkStatus($url->name),
+            'status_code' => $response->status(),
             'created_at' => Carbon::now(),
             'h1' => optional($document->first('h1'))->text(),
             'title' => optional($document->first('title'))->text(),
