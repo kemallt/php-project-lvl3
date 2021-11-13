@@ -64,10 +64,18 @@ class UrlTest extends TestCase
 
     public function testStoreDouble()
     {
-        $url = ['name' => 'https://google.com'];
+        $url = ['id' => 1, 'name' => 'https://google.com'];
         $response = $this->post(route('urls.store', ['url' => $url]));
-        $status = session('status');
-        $this->assertEquals('Страница уже существует', $status);
-        $response->assertRedirect();
+        $this->assertEquals('Страница уже существует', session('status'));
+        $response->assertRedirect(route('urls.show', ['url' => $url['id']]));
+    }
+
+    public function testCheck()
+    {
+        $url = ['id' => 1, 'name' => 'https://google.com'];
+        $response = $this->post(route('urls.checks', ['url' => $url['id']]));
+        $this->assertDatabaseHas('url_checks', ['url_id' => $url['id']]);
+        $response->assertRedirect(route('urls.show', ['url' => $url['id']]));
+        $this->followRedirects($response)->assertStatus(200)->assertSee($url['name']);
     }
 }

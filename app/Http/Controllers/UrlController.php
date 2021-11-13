@@ -40,23 +40,22 @@ class UrlController extends Controller
         $validatedData = $request->validate([
             'url.name' => 'required|max:255|url'
         ]);
-        $foundedUrl = DB::table('urls')->where('name', '=', $validatedData['url']['name'])->get();
+        $url = $this->prepareUrl($validatedData['url']);
+        $foundedUrl = DB::table('urls')->where('name', '=', $url['name'])->get();
         if ($foundedUrl->count() !== 0) {
             return redirect()
                 ->route('urls.show', ['url' => $foundedUrl->first()->id])
                 ->withStatus('Страница уже существует');
         }
         try {
-            $url = $validatedData['url'];
-            $url['created_at'] = Carbon::now();
             $id = DB::table('urls')->insertGetId($url);
-            return redirect()->route('urls.show', ['url' => $id])->withSuccess('Сайт успешно добавлен');
         } catch (\Exception $exception) {
             return redirect()
                 ->route('urls.create')
                 ->withInput()
                 ->with(['error' => true, 'message' => $exception->getMessage()]);
         }
+        return redirect()->route('urls.show', ['url' => $id])->withSuccess('Страница успешно добавлен');
     }
 
     /**
@@ -68,41 +67,45 @@ class UrlController extends Controller
     public function show($id)
     {
         $url = DB::table('urls')->find($id);
-        return view('show', ['url' => $url]);
+        $checks = DB::table('url_checks')->where('url_id', $id)->orderBy('created_at', 'desc')->get();
+        $url->last_check = $checks->count() > 0 ? $checks[0]->created_at : '';
+        return view('show', ['url' => $url, 'checks' => $checks]);
     }
 
-//    /**
-//     * Show the form for editing the specified resource.
-//     *
-//     * @param  int  $id
-//     * @return \Illuminate\Http\Response
-//     */
-//    public function edit($id)
-//    {
-//        $url = DB::table('urls')->find($id);
-//        return view('edit', ['url' => $url]);
-//    }
+    /**
+     * Check the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function check($id)
+    {
+        $url = DB::table('urls')->find($id);
+        $check = [
+            'url_id' => $id,
+            'status_code' => 0,
+            'h1' => '',
+            'title' => '',
+            'description' => '',
+            'created_at' => Carbon::now()
+        ];
+        try {
+            DB::table('url_checks')->insert($check);
+        } catch (\Exception $exception) {
+            return redirect()
+                ->route('urls.create')
+                ->withInput()
+                ->with(['error' => true, 'message' => $exception->getMessage()]);
+        }
+        return redirect()->route('urls.show', ['url' => $id])->withSuccess('Страница успешно проверена');
+    }
 
-//    /**
-//     * Update the specified resource in storage.
-//     *
-//     * @param  \Illuminate\Http\Request  $request
-//     * @param  int  $id
-//     * @return \Illuminate\Http\Response
-//     */
-//    public function update(Request $request, $id)
-//    {
-//        //
-//    }
-//
-//    /**
-//     * Remove the specified resource from storage.
-//     *
-//     * @param  int  $id
-//     * @return \Illuminate\Http\Response
-//     */
-//    public function destroy($id)
-//    {
-//        //
-//    }
+    public function prepareUrl($url)
+    {
+        $url['created_at'] = Carbon::now();
+        $urlScheme = parse_url($url['name'], PHP_URL_SCHEME);
+        $urlName = parse_url($url['name'], PHP_URL_HOST);
+        $url['name'] = mb_strtolower($urlScheme) . "://" . mb_strtolower($urlName);
+        return $url;
+    }
 }
