@@ -12,9 +12,9 @@ class UrlCheckTest extends TestCase
 {
     use DatabaseMigrations;
 
-    protected $urls;
-    protected $url;
-    protected $statusCode;
+    protected array $urls;
+    protected array $url;
+    protected int $statusCode;
 
     protected function setUp(): void
     {
@@ -32,7 +32,7 @@ class UrlCheckTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testCheck($html, $seeText): void
+    public function testCheck(string $html, string $seeText): void
     {
         Http::fake([
             $this->url['name'] => Http::response($html, $this->statusCode)
@@ -43,14 +43,9 @@ class UrlCheckTest extends TestCase
             'status_code' => $this->statusCode
         ]);
         $response->assertRedirect(route('urls.show', ['url' => $this->url['id']]));
-        $this
-            ->followRedirects($response)
-            ->assertStatus($this->statusCode)
-            ->assertSee($this->statusCode)
-            ->assertSee($seeText);
     }
 
-    public function dataProvider()
+    public function dataProvider(): array
     {
         return [
             'testFilled' => [file_get_contents(__DIR__ . '/../fixtures/test.html'), 'h1 mock text'],

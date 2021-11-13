@@ -13,7 +13,7 @@ class UrlController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\View\View
      */
     public function index()
     {
@@ -33,7 +33,7 @@ class UrlController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\View\View
      */
     public function create()
     {
@@ -44,7 +44,7 @@ class UrlController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
@@ -73,7 +73,7 @@ class UrlController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\View\View
      */
     public function show($id)
     {
@@ -86,8 +86,8 @@ class UrlController extends Controller
     public function prepareUrl(array $url): array
     {
         $url['created_at'] = Carbon::now();
-        $urlScheme = parse_url($url['name'], PHP_URL_SCHEME);
-        $urlName = parse_url($url['name'], PHP_URL_HOST);
+        $urlScheme = parse_url($url['name'], PHP_URL_SCHEME) ?? '';
+        $urlName = parse_url($url['name'], PHP_URL_HOST) ?? '';
         $url['name'] = mb_strtolower($urlScheme) . "://" . mb_strtolower($urlName);
         return $url;
     }

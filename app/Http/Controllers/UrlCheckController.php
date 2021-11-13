@@ -14,7 +14,7 @@ class UrlCheckController extends Controller
      * Check the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function check($id)
     {
