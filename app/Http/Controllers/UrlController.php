@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use DiDom\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -16,7 +17,6 @@ class UrlController extends Controller
      */
     public function index()
     {
-//        $urls = DB::table('urls')->get();
         $urls = DB::table('urls')
             ->leftJoin('url_checks', 'urls.id', '=', 'url_checks.url_id')
             ->select(
@@ -109,18 +109,35 @@ class UrlController extends Controller
         return redirect()->route('urls.show', ['url' => $id])->withSuccess('Страница успешно проверена');
     }
 
+    public function checkStatus(string $url): int
+    {
+        $response = Http::get($url);
+        return $response->status();
+    }
+
+    public function getHtmlData(object $document)
+    {
+        $h1 = optional($document->first('h1'))->text();
+        $title = optional($document->first('title'))->text();
+        $description = optional($document->first('meta[name=description]'))->attr('content');
+        return [
+            'h1' => $h1,
+            'title' => $title,
+            'description' => $description
+        ];
+    }
+
     public function performCheck(object $url): array
     {
-        $response = Http::get($url->name);
-        $check = [
-            'url_id' => $url->id,
-            'status_code' => $response->status(),
-            'h1' => '',
-            'title' => '',
-            'description' => '',
-            'created_at' => Carbon::now()
-        ];
-        return $check;
+        $document = new Document($url->name, true);
+        return array_merge(
+            [
+                'url_id' => $url->id,
+                'status_code' => $this->checkStatus($url->name),
+                'created_at' => Carbon::now()
+            ],
+            $this->getHtmlData($document)
+        );
     }
 
     public function prepareUrl(array $url): array

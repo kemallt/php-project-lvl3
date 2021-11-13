@@ -38,9 +38,9 @@
                 {{session('success')}}
             </div>
         @endif
-        @if(session('error'))
+        @if(session('errors'))
             <div class="alert alert-info" role="alert">
-                {{session('message')}}
+                {{session('errors')->first('message')}}
             </div>
         @endif
         @if(session('status'))
