@@ -11,7 +11,9 @@ class UrlTest extends TestCase
 {
     use DatabaseMigrations;
 
-    protected $urls, $url, $statusCode;
+    protected $urls;
+    protected $url;
+    protected $statusCode;
 
     protected function setUp(): void
     {
