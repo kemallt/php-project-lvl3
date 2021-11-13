@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class UrlController extends Controller
 {
@@ -91,14 +92,7 @@ class UrlController extends Controller
     public function check($id)
     {
         $url = DB::table('urls')->find($id);
-        $check = [
-            'url_id' => $id,
-            'status_code' => 0,
-            'h1' => '',
-            'title' => '',
-            'description' => '',
-            'created_at' => Carbon::now()
-        ];
+        $check = $this->performCheck($url);
         try {
             DB::table('url_checks')->insert($check);
         } catch (\Exception $exception) {
@@ -108,6 +102,20 @@ class UrlController extends Controller
                 ->with(['error' => true, 'message' => $exception->getMessage()]);
         }
         return redirect()->route('urls.show', ['url' => $id])->withSuccess('Страница успешно проверена');
+    }
+
+    public function performCheck($url)
+    {
+        $response = Http::get($url->name);
+        $check = [
+            'url_id' => $url->id,
+            'status_code' => $response->status(),
+            'h1' => '',
+            'title' => '',
+            'description' => '',
+            'created_at' => Carbon::now()
+        ];
+        return $check;
     }
 
     public function prepareUrl($url)

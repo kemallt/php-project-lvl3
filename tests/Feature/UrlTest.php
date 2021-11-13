@@ -7,20 +7,23 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class UrlTest extends TestCase
 {
     use DatabaseMigrations;
 
+    protected $urls;
+
     protected function setUp(): void
     {
-        parent::setUp();
-        $urls = [
+        $this->urls = [
             ['name' => 'https://google.com', 'created_at' => Carbon::now()],
             ['name' => 'https://yandex.ru', 'created_at' => Carbon::now()]
         ];
-        DB::table('urls')->insert($urls);
+        parent::setUp();
+        DB::table('urls')->insert($this->urls);
     }
 
     public function testCreate()
@@ -34,14 +37,14 @@ class UrlTest extends TestCase
     {
         $response = $this->get(route('urls.index'));
         $response->assertStatus(200);
-        $response->assertSee('https://google.com');
-        $response->assertSee('https://yandex.ru');
+        $response->assertSee($this->urls[0]['name']);
+        $response->assertSee($this->urls[1]['name']);
     }
 
     public function testShow()
     {
         $response = $this->get(route('urls.show', ['url' => 1]));
-        $response->assertSee('https://google.com');
+        $response->assertSee($this->urls[0]['name']);
         $response->assertSee('Имя');
     }
 
@@ -64,18 +67,23 @@ class UrlTest extends TestCase
 
     public function testStoreDouble()
     {
-        $url = ['id' => 1, 'name' => 'https://google.com'];
+        $url = $this->urls[0];
         $response = $this->post(route('urls.store', ['url' => $url]));
         $this->assertEquals('Страница уже существует', session('status'));
-        $response->assertRedirect(route('urls.show', ['url' => $url['id']]));
+        $response->assertRedirect(route('urls.show', ['url' => 1]));
     }
 
     public function testCheck()
     {
-        $url = ['id' => 1, 'name' => 'https://google.com'];
+        $url = $this->urls[0];
+        $url['id'] = 1;
+        $statusCode = 200;
+        Http::fake([
+            $url['name'] => Http::response('Hello world', 200)
+        ]);
         $response = $this->post(route('urls.checks', ['url' => $url['id']]));
-        $this->assertDatabaseHas('url_checks', ['url_id' => $url['id']]);
+        $this->assertDatabaseHas('url_checks', ['url_id' => $url['id'], 'status_code' => $statusCode]);
         $response->assertRedirect(route('urls.show', ['url' => $url['id']]));
-        $this->followRedirects($response)->assertStatus(200)->assertSee($url['name']);
+        $this->followRedirects($response)->assertStatus(200)->assertSee($statusCode);
     }
 }
