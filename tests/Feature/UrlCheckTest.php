@@ -12,7 +12,9 @@ class UrlCheckTest extends TestCase
 {
     use DatabaseMigrations;
 
-    protected $urls, $url, $statusCode;
+    protected $urls;
+    protected $url;
+    protected $statusCode;
 
     protected function setUp(): void
     {
@@ -41,7 +43,11 @@ class UrlCheckTest extends TestCase
             'status_code' => $this->statusCode
         ]);
         $response->assertRedirect(route('urls.show', ['url' => $this->url['id']]));
-        $this->followRedirects($response)->assertStatus($this->statusCode)->assertSee($this->statusCode)->assertSee($seeText);
+        $this
+            ->followRedirects($response)
+            ->assertStatus($this->statusCode)
+            ->assertSee($this->statusCode)
+            ->assertSee($seeText);
     }
 
     public function dataProvider()
