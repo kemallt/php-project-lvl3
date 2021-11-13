@@ -71,17 +71,17 @@ class UrlController extends Controller
         return view('show', ['url' => $url]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $url = DB::table('urls')->find($id);
-        return view('edit', ['url' => $url]);
-    }
+//    /**
+//     * Show the form for editing the specified resource.
+//     *
+//     * @param  int  $id
+//     * @return \Illuminate\Http\Response
+//     */
+//    public function edit($id)
+//    {
+//        $url = DB::table('urls')->find($id);
+//        return view('edit', ['url' => $url]);
+//    }
 
 //    /**
 //     * Update the specified resource in storage.
