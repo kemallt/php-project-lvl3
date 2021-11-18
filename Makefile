@@ -9,15 +9,6 @@ setup:
 	php artisan migrate
 	php artisan db:seed
 
-watch:
-	npm run watch
-
-migrate:
-	php artisan migrate
-
-console:
-	php artisan tinker
-
 log:
 	tail -f storage/logs/laravel.log
 
@@ -32,6 +23,3 @@ deploy:
 
 lint:
 	composer exec --verbose phpcs -- --standard=PSR12 app
-
-lint-fix:
-	composer phpcbf
