@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use DiDom\Document;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -19,6 +18,11 @@ class UrlCheckController extends Controller
     public function check($id)
     {
         $url = DB::table('urls')->find($id);
+        if ($url === null) {
+            return redirect()
+                ->back()
+                ->withErrors(['resourceCheck' => "could not find url by id"]);
+        }
         try {
             $checkResult = $this->performCheck($url);
         } catch (\Exception $exception) {

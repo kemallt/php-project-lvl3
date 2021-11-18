@@ -29,6 +29,13 @@ class UrlCheckTest extends TestCase
         DB::table('urls')->insert($this->urls);
     }
 
+    public function testCheckFailed(): void
+    {
+        $response = $this->post(route('urls.checks', ['url' => 11]));
+        $response->assertSessionHasErrors(['resourceCheck' => "could not find url by id"]);
+        $response->assertRedirect();
+    }
+
     /**
      * @dataProvider dataProvider
      */
