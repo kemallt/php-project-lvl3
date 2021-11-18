@@ -40,7 +40,7 @@ class UrlCheckController extends Controller
         return redirect()->route('urls.show', ['url' => $id])->withSuccess('Страница успешно проверена');
     }
 
-    public function performCheck(object $url): array
+    public function performCheck(mixed $url): array
     {
         $response = Http::get($url->name);
         $document = new Document($response->body());
