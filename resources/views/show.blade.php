@@ -15,7 +15,7 @@
                 </tr>
                 <tr>
                     <td>Дата создания</td>
-                    <td>{{$url->last_check}}</td>
+                    <td>{{$lastCheck}}</td>
                 </tr>
                 </tbody>
             </table>

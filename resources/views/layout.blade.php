@@ -39,8 +39,8 @@
             </div>
         @endif
         @if(session('errors'))
-            <div class="alert alert-info" role="alert">
-                {{session('errors')->first('message')}}
+            <div class="alert alert-danger" role="alert">
+                {{session('errors')->first()}}
             </div>
         @endif
         @if(session('status'))

@@ -17,15 +17,28 @@ class UrlController extends Controller
      */
     public function index()
     {
+        $lastChecks = DB::table('url_checks')
+            ->select(
+                'url_id',
+                DB::raw('MAX(created_at) as last_check')
+            )
+            ->groupBy('url_id');
         $urls = DB::table('urls')
-            ->leftJoin('url_checks', 'urls.id', '=', 'url_checks.url_id')
+            ->leftJoinSub($lastChecks, 'lastChecks', function ($join) {
+                $join->on('urls.id', '=', 'lastChecks.url_id');
+            })
+            ->leftJoin('url_checks', function ($join) {
+                $join
+                    ->on('lastChecks.url_id', '=', 'url_checks.url_id')
+                    ->on('lastChecks.last_check', '=', 'url_checks.created_at');
+            })
             ->select(
                 'urls.id as id',
                 'urls.name as name',
                 'urls.created_at as created_at',
-                DB::raw('max(url_checks.created_at) as last_check')
+                'lastChecks.last_check as last_check',
+                'url_checks.status_code as status_code'
             )
-            ->groupBy('urls.id', 'urls.name', 'urls.created_at')
             ->get();
         return view('index', ['urls' => $urls]);
     }
@@ -52,10 +65,10 @@ class UrlController extends Controller
             'url.name' => 'required|max:255|url'
         ]);
         $url = $this->prepareUrl($validatedData['url']);
-        $foundedUrl = DB::table('urls')->where('name', '=', $url['name'])->get();
-        if ($foundedUrl->count() !== 0) {
+        $foundUrl = DB::table('urls')->where('name', '=', $url['name'])->first();
+        if ($foundUrl !== null) {
             return redirect()
-                ->route('urls.show', ['url' => $foundedUrl->first()->id])
+                ->route('urls.show', ['url' => $foundUrl->id])
                 ->withStatus('Страница уже существует');
         }
         try {
@@ -66,7 +79,7 @@ class UrlController extends Controller
                 ->withInput()
                 ->with(['error' => true, 'message' => $exception->getMessage()]);
         }
-        return redirect()->route('urls.show', ['url' => $id])->withSuccess('Страница успешно добавлен');
+        return redirect()->route('urls.show', ['url' => $id])->withSuccess('Страница успешно добавлена');
     }
 
     /**
@@ -79,8 +92,8 @@ class UrlController extends Controller
     {
         $url = DB::table('urls')->find($id);
         $checks = DB::table('url_checks')->where('url_id', $id)->orderBy('created_at', 'desc')->get();
-        $url->last_check = $checks->count() > 0 ? $checks[0]->created_at : '';
-        return view('show', ['url' => $url, 'checks' => $checks]);
+        $lastCheck = $checks->count() > 0 ? $checks[0]->created_at : '';
+        return view('show', ['url' => $url, 'lastCheck' => $lastCheck, 'checks' => $checks]);
     }
 
     public function prepareUrl(array $url): array

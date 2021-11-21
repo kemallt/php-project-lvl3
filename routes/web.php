@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::resource('/urls', 'App\Http\Controllers\UrlController')->only(['create', 'index', 'show', 'store']);
 Route::get('/', 'App\Http\Controllers\UrlController@create')->name('urls.create');
-Route::get('/urls', 'App\Http\Controllers\UrlController@index')->name('urls.index');
-Route::get('/urls/{url}', 'App\Http\Controllers\UrlController@show')->name('urls.show');
-Route::post('/urls', 'App\Http\Controllers\UrlController@store')->name('urls.store');
 
 Route::post('/urls/{url}/checks', 'App\Http\Controllers\UrlCheckController@check')->name('urls.checks');
