@@ -17,30 +17,39 @@ class UrlController extends Controller
      */
     public function index()
     {
+        $urls = DB::table('urls')
+            ->select(
+                'id as id',
+                'name as name',
+                'created_at as created_at'
+            )
+            ->get();
         $lastChecks = DB::table('url_checks')
             ->select(
                 'url_id',
                 DB::raw('MAX(created_at) as last_check')
             )
             ->groupBy('url_id');
-        $urls = DB::table('urls')
+        $lastChecksWithStatuses = DB::table('url_checks')
             ->leftJoinSub($lastChecks, 'lastChecks', function ($join) {
-                $join->on('urls.id', '=', 'lastChecks.url_id');
-            })
-            ->leftJoin('url_checks', function ($join) {
                 $join
                     ->on('lastChecks.url_id', '=', 'url_checks.url_id')
                     ->on('lastChecks.last_check', '=', 'url_checks.created_at');
             })
             ->select(
-                'urls.id as id',
-                'urls.name as name',
-                'urls.created_at as created_at',
-                'lastChecks.last_check as last_check',
-                'url_checks.status_code as status_code'
+                'url_checks.url_id as url',
+                'url_checks.status_code as status_code',
+                'lastChecks.last_check as last_check'
             )
             ->get();
-        return view('index', ['urls' => $urls]);
+        $lastCheskByUrl = $lastChecksWithStatuses->reduce(
+            function ($carry, $item) {
+                $carry->put($item->url, $item);
+                return $carry;
+            },
+            collect()
+        );
+        return view('index', ['urls' => $urls, 'checks' => $lastCheskByUrl]);
     }
 
     /**
@@ -75,7 +84,7 @@ class UrlController extends Controller
             $id = DB::table('urls')->insertGetId($url);
         } catch (\Exception $exception) {
             return redirect()
-                ->route('urls.create')
+                ->route('urls.main')
                 ->withInput()
                 ->with(['error' => true, 'message' => $exception->getMessage()]);
         }

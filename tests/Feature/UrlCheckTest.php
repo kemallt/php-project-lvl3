@@ -10,8 +10,6 @@ use Tests\TestCase;
 
 class UrlCheckTest extends TestCase
 {
-    use DatabaseMigrations;
-
     protected array $urls;
     protected array $url;
     protected int $statusCode;
@@ -39,7 +37,7 @@ class UrlCheckTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testCheck(string $html, string $seeText): void
+    public function testCheck(string $html, ?string $h1Text, ?string $title, ?string $description): void
     {
         Http::fake([
             $this->url['name'] => Http::response($html, $this->statusCode)
@@ -47,7 +45,10 @@ class UrlCheckTest extends TestCase
         $response = $this->post(route('urls.checks', ['url' => $this->url['id']]));
         $this->assertDatabaseHas('url_checks', [
             'url_id' => $this->url['id'],
-            'status_code' => $this->statusCode
+            'status_code' => $this->statusCode,
+            'h1' => $h1Text,
+            'title' => $title,
+            'description' => $description
         ]);
         $response->assertRedirect(route('urls.show', ['url' => $this->url['id']]));
     }
@@ -55,8 +56,13 @@ class UrlCheckTest extends TestCase
     public function dataProvider(): array
     {
         return [
-            'testFilled' => [file_get_contents(__DIR__ . '/../fixtures/test.html'), 'h1 mock text'],
-            'testNulls' => [file_get_contents(__DIR__ . '/../fixtures/testnull.html'), 'body']
+            'testFilled' => [
+                file_get_contents(__DIR__ . '/../fixtures/test.html'),
+                'h1 mock text',
+                'title mock text',
+                'description mock text'
+            ],
+            'testNulls' => [file_get_contents(__DIR__ . '/../fixtures/testnull.html'), null, null, null]
         ];
     }
 }

@@ -10,7 +10,7 @@
 <body>
     <header class="flex-shrink-0">
         <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-            <a class="navbar-brand" href="{{route('urls.create')}}">{{env('APP_NAME')}}</a>
+            <a class="navbar-brand" href="{{route('urls.main')}}">{{env('APP_NAME')}}</a>
             <button
                 class="navbar-toggler"
                 type="button"
@@ -23,7 +23,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a @class(["nav-link", 'active' => route('urls.create') === Request::url()]) href="{{route('urls.create')}}">Главная</a>
+                        <a @class(["nav-link", 'active' => route('urls.main') === Request::url()]) href="{{route('urls.main')}}">Главная</a>
                     </li>
                     <li class="nav-item">
                         <a @class(["nav-link", 'active' => route('urls.index') === Request::url()]) href="{{route('urls.index')}}">Сайты</a>

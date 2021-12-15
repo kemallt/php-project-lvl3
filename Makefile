@@ -22,4 +22,4 @@ deploy:
 	git push heroku
 
 lint:
-	composer exec --verbose phpcs -- --standard=PSR12 app
+	composer exec --verbose phpcs -- --standard=PSR12 app tests routes

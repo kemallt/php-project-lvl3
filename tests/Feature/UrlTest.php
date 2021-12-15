@@ -9,8 +9,6 @@ use Tests\TestCase;
 
 class UrlTest extends TestCase
 {
-    use DatabaseMigrations;
-
     protected array $urls;
     protected array $url;
     protected int $statusCode;
@@ -28,9 +26,9 @@ class UrlTest extends TestCase
         DB::table('urls')->insert($this->urls);
     }
 
-    public function testCreate(): void
+    public function testMain(): void
     {
-        $response = $this->get(route('urls.create'));
+        $response = $this->get(route('urls.main'));
         $response->assertStatus($this->statusCode);
         $response->assertSee('Проверить');
     }
@@ -47,7 +45,9 @@ class UrlTest extends TestCase
     {
         $response = $this->get(route('urls.show', ['url' => $this->url['id']]));
         $response->assertSee($this->url['name']);
-        $response->assertSee('Имя');
+        $response->assertViewIs('show');
+        $response->assertViewHas('url');
+        $response->assertViewHas('checks');
     }
 
     public function testStore(): void
