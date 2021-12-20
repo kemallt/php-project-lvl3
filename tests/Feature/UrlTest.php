@@ -11,7 +11,6 @@ class UrlTest extends TestCase
 {
     protected array $urls;
     protected array $url;
-    protected int $statusCode;
 
     protected function setUp(): void
     {
@@ -21,24 +20,16 @@ class UrlTest extends TestCase
         ];
         $this->url = $this->urls[0];
         $this->url['id'] = 1;
-        $this->statusCode = 200;
         parent::setUp();
         DB::table('urls')->insert($this->urls);
-    }
-
-    public function testMain(): void
-    {
-        $response = $this->get(route('urls.main'));
-        $response->assertStatus($this->statusCode);
-        $response->assertSee('Проверить');
     }
 
     public function testIndex(): void
     {
         $response = $this->get(route('urls.index'));
-        $response->assertStatus($this->statusCode);
         $response->assertSee($this->urls[0]['name']);
         $response->assertSee($this->urls[1]['name']);
+        $response->assertOk();
     }
 
     public function testShow(): void
@@ -48,6 +39,7 @@ class UrlTest extends TestCase
         $response->assertViewIs('show');
         $response->assertViewHas('url');
         $response->assertViewHas('checks');
+        $response->assertOk();
     }
 
     public function testStore(): void

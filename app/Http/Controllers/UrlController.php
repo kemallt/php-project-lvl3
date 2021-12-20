@@ -84,7 +84,7 @@ class UrlController extends Controller
             $id = DB::table('urls')->insertGetId($url);
         } catch (\Exception $exception) {
             return redirect()
-                ->route('urls.main')
+                ->route('urls.blankCreate')
                 ->withInput()
                 ->with(['error' => true, 'message' => $exception->getMessage()]);
         }
