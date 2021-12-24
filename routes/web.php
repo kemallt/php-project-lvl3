@@ -17,4 +17,4 @@ Route::resource('/urls', 'App\Http\Controllers\UrlController')->only(['create', 
 
 Route::post('/urls/{url}/checks', 'App\Http\Controllers\UrlCheckController@check')->name('urls.checks');
 
-Route::get('/', 'App\Http\Controllers\AppEntryController@showAppEntry')->name('urls.appEntry');
+Route::get('/', 'App\Http\Controllers\HomeController@index')->name('home');

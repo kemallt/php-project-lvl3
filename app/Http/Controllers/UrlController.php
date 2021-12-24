@@ -19,9 +19,9 @@ class UrlController extends Controller
     {
         $urls = DB::table('urls')
             ->select(
-                'id as id',
-                'name as name',
-                'created_at as created_at'
+                'id',
+                'name',
+                'created_at'
             )
             ->get();
         $lastChecks = DB::table('url_checks')
