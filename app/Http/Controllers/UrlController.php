@@ -21,12 +21,15 @@ class UrlController extends Controller
             ->get()
             ->map(function ($url) {
                 $check = DB::table('url_checks')->where('url_id', $url->id)->orderByDesc('created_at')->first();
-                if ($check === null) {
-                    $url->status_code = "";
-                    $url->last_check = "";
-                } else {
+                if (is_object($check) && property_exists($check, 'status_code')) {
                     $url->status_code = $check->status_code;
+                } else {
+                    $url->status_code = "";
+                }
+                if (is_object($check) && property_exists($check, 'created_at')) {
                     $url->last_check = $check->created_at;
+                } else {
+                    $url->last_check = "";
                 }
                 return $url;
             });
