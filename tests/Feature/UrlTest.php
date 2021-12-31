@@ -45,9 +45,10 @@ class UrlTest extends TestCase
     public function testStore(): void
     {
         $url = ['name' => 'https://mail.ru'];
-        $response = $this->post(route('urls.store', ['url' => $url]));
+        $response = $this->followingRedirects()->post(route('urls.store', ['url' => $url]));
         $response->assertSessionHasNoErrors();
-        $response->assertRedirect();
+        $response->assertStatus(200);
+        $response->assertSee($url['name']);
         $this->assertDatabaseHas('urls', $url);
     }
 

@@ -18,38 +18,14 @@ class UrlController extends Controller
     public function index()
     {
         $urls = DB::table('urls')
-            ->select(
-                'id',
-                'name',
-                'created_at'
-            )
-            ->get();
-        $lastChecks = DB::table('url_checks')
-            ->select(
-                'url_id',
-                DB::raw('MAX(created_at) as last_check')
-            )
-            ->groupBy('url_id');
-        $lastChecksWithStatuses = DB::table('url_checks')
-            ->leftJoinSub($lastChecks, 'lastChecks', function ($join) {
-                $join
-                    ->on('lastChecks.url_id', '=', 'url_checks.url_id')
-                    ->on('lastChecks.last_check', '=', 'url_checks.created_at');
-            })
-            ->select(
-                'url_checks.url_id as url',
-                'url_checks.status_code as status_code',
-                'lastChecks.last_check as last_check'
-            )
-            ->get();
-        $lastCheskByUrl = $lastChecksWithStatuses->reduce(
-            function ($carry, $item) {
-                $carry->put($item->url, $item);
-                return $carry;
-            },
-            collect()
-        );
-        return view('index', ['urls' => $urls, 'checks' => $lastCheskByUrl]);
+            ->get()
+            ->map(function ($url) {
+                $check = DB::table('url_checks')->where('url_id', $url->id)->orderByDesc('created_at')->first();
+                $url->status_code = $check->status_code ?? null;
+                $url->last_check = $check->created_at ?? null;
+                return $url;
+            });
+        return view('index', ['urls' => $urls]);
     }
 
     /**
@@ -80,14 +56,7 @@ class UrlController extends Controller
                 ->route('urls.show', ['url' => $foundUrl->id])
                 ->withStatus('Страница уже существует');
         }
-        try {
-            $id = DB::table('urls')->insertGetId($url);
-        } catch (\Exception $exception) {
-            return redirect()
-                ->route('urls.blankCreate')
-                ->withInput()
-                ->with(['error' => true, 'message' => $exception->getMessage()]);
-        }
+        $id = DB::table('urls')->insertGetId($url);
         return redirect()->route('urls.show', ['url' => $id])->withSuccess('Страница успешно добавлена');
     }
 
