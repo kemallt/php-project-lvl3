@@ -21,21 +21,16 @@ class UrlController extends Controller
             ->get()
             ->map(function ($url) {
                 $check = DB::table('url_checks')->where('url_id', $url->id)->orderByDesc('created_at')->first();
-                $url->status_code = $check->status_code ?? null;
-                $url->last_check = $check->created_at ?? null;
+                if ($check === null) {
+                    $url->status_code = null;
+                    $url->last_check = null;
+                } else {
+                    $url->status_code = $check->status_code;
+                    $url->last_check = $check->created_at;
+                }
                 return $url;
             });
         return view('index', ['urls' => $urls]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function create()
-    {
-        return view('create');
     }
 
     /**
