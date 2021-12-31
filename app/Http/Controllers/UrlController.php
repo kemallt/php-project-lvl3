@@ -21,8 +21,13 @@ class UrlController extends Controller
             ->get()
             ->map(function ($url) {
                 $check = DB::table('url_checks')->where('url_id', $url->id)->orderByDesc('created_at')->first();
-                $url->status_code = $check?->status_code;
-                $url->last_check = $check?->created_at;
+                if ($check === null) {
+                    $url->status_code = "";
+                    $url->last_check = "";
+                } else {
+                    $url->status_code = $check->status_code;
+                    $url->last_check = $check->created_at;
+                }
                 return $url;
             });
         return view('index', ['urls' => $urls]);
