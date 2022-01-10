@@ -18,22 +18,15 @@ class UrlController extends Controller
     public function index()
     {
         $urls = DB::table('urls')
+            ->get();
+        $checks = DB::table('url_checks')
+            ->orderByDesc('created_at')
             ->get()
-            ->map(function ($url) {
-                $check = DB::table('url_checks')->where('url_id', $url->id)->orderByDesc('created_at')->first();
-                if (is_object($check) && property_exists($check, 'status_code')) {
-                    $url->status_code = $check->status_code;
-                } else {
-                    $url->status_code = "";
-                }
-                if (is_object($check) && property_exists($check, 'created_at')) {
-                    $url->last_check = $check->created_at;
-                } else {
-                    $url->last_check = "";
-                }
-                return $url;
+            ->unique('url_id')
+            ->mapWithKeys(function ($check) {
+                return [$check->url_id => ['last_check' => $check->created_at, 'status_code' => $check->status_code]];
             });
-        return view('index', ['urls' => $urls]);
+        return view('index', ['urls' => $urls, 'checks' => $checks]);
     }
 
     /**
@@ -67,7 +60,16 @@ class UrlController extends Controller
     public function show($id)
     {
         $url = DB::table('urls')->find($id);
-        $checks = DB::table('url_checks')->where('url_id', $id)->orderBy('created_at', 'desc')->get();
+        $checks = DB::table('url_checks')
+            ->where('url_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($check) {
+                $check->h1 = strlen($check->h1) > 100 ? substr($check->h1, 0, 50) . '...' : $check->h1;
+                $check->title = strlen($check->title) > 100 ? substr($check->title, 0, 100) . '...' : $check->title;
+                $check->description = strlen($check->description) > 100 ? substr($check->description, 0, 50) . '...' : $check->description;
+                return $check;
+            });
         $lastCheck = $checks->count() > 0 ? $checks[0]->created_at : '';
         return view('show', ['url' => $url, 'lastCheck' => $lastCheck, 'checks' => $checks]);
     }
