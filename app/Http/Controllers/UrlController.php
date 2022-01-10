@@ -67,7 +67,9 @@ class UrlController extends Controller
             ->map(function ($check) {
                 $check->h1 = strlen($check->h1) > 100 ? substr($check->h1, 0, 50) . '...' : $check->h1;
                 $check->title = strlen($check->title) > 100 ? substr($check->title, 0, 100) . '...' : $check->title;
-                $check->description = strlen($check->description) > 100 ? substr($check->description, 0, 50) . '...' : $check->description;
+                if (strlen($check->description) > 100) {
+                    $check->description = substr($check->description, 0, 100) . '...';
+                }
                 return $check;
             });
         $lastCheck = $checks->count() > 0 ? $checks[0]->created_at : '';
