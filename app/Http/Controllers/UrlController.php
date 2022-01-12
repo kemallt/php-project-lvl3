@@ -65,10 +65,10 @@ class UrlController extends Controller
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($check) {
-                $check->h1 = strlen($check->h1) > 100 ? substr($check->h1, 0, 50) . '...' : $check->h1;
-                $check->title = strlen($check->title) > 100 ? substr($check->title, 0, 100) . '...' : $check->title;
-                if (strlen($check->description) > 100) {
-                    $check->description = substr($check->description, 0, 100) . '...';
+                $check->h1 = mb_strlen($check->h1) > 50 ? mb_substr($check->h1, 0, 50) . '...' : $check->h1;
+                $check->title = mb_strlen($check->title) > 50 ? mb_substr($check->title, 0, 50) . '...' : $check->title;
+                if (mb_strlen($check->description) > 50) {
+                    $check->description = mb_substr($check->description, 0, 50) . '...';
                 }
                 return $check;
             });

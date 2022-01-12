@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use DiDom\Document;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class UrlCheckController extends Controller
 {
@@ -29,6 +31,21 @@ class UrlCheckController extends Controller
             return redirect()
                 ->back()
                 ->withErrors(['resourceCheck' => $exception->getMessage()]);
+        }
+        $validator = Validator::make($checkResult, [
+            'h1' => 'max:500',
+            'title' => 'max:500'
+        ]);
+        if ($validator->fails()) {
+            $logMessage =
+                "Error saving check. checkResult = "
+                . print_r($checkResult, true)
+                . "; errors = "
+                . print_r($validator->errors(), true);
+            Log::error($logMessage);
+            return redirect()
+                ->back()
+                ->withErrors($validator);
         }
         try {
             DB::table('url_checks')->insert($checkResult);
